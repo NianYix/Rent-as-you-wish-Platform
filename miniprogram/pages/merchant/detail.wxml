@@ -1,0 +1,14 @@
+<view class="page" wx:if="{{merchant}}">
+  <view class="card">
+    <view class="name">{{merchant.merchant_name}}</view>
+    <view class="sub">认证：{{merchant.verify_status}}</view>
+    <view class="sub">营业：{{merchant.business_hours || '未填写'}}</view>
+    <view class="sub">地址：{{merchant.address}}</view>
+    <view class="txt">{{merchant.description}}</view>
+  </view>
+  <view class="section-title" style="padding:0 24rpx">主营商品</view>
+  <view class="card item" wx:for="{{products}}" wx:key="id" data-id="{{item.id}}" bindtap="goProduct">
+    <view class="name">{{item.name}}</view>
+    <view class="price">{{formatPrice(item)}}</view>
+  </view>
+</view>

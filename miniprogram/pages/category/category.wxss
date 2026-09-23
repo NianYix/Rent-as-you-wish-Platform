@@ -1,0 +1,10 @@
+.wrap { display: flex; height: 100vh; }
+.left { width: 200rpx; background: #eef3ef; }
+.left-item { padding: 28rpx 16rpx; font-size: 26rpx; }
+.left-item.active { background: #fff; color: #1b5e3b; font-weight: 600; }
+.right { flex: 1; background: #fff; padding: 16rpx; }
+.children { display: flex; flex-wrap: wrap; gap: 12rpx; margin-bottom: 16rpx; }
+.tag { background: #f3f6f2; padding: 8rpx 16rpx; border-radius: 8rpx; font-size: 22rpx; }
+.product { padding: 20rpx 8rpx; border-bottom: 1px solid #f3f4f6; }
+.name { font-weight: 600; }
+.sub { color: #6b7280; font-size: 24rpx; margin-top: 6rpx; }

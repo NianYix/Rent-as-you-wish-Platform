@@ -1,0 +1,44 @@
+<view class="page">
+  <view class="top-bar">
+    <view class="region" bindtap="goRegion">📍 {{regionName}}</view>
+    <view class="search" bindtap="goSearch">🔍 搜索物品</view>
+  </view>
+
+  <swiper wx:if="{{banners.length}}" class="banner" indicator-dots autoplay circular>
+    <swiper-item wx:for="{{banners}}" wx:key="id">
+      <image src="{{item.image_url}}" mode="aspectFill" class="banner-img" />
+    </swiper-item>
+  </swiper>
+  <view wx:else class="banner banner-fallback">乡镇本地物品租赁</view>
+
+  <view class="section">
+    <view class="section-title">常用分类</view>
+    <view class="cat-grid">
+      <view class="cat-item" wx:for="{{categories}}" wx:key="id" data-id="{{item.id}}" bindtap="goCategory">
+        <view class="cat-icon">{{item.name[0]}}</view>
+        <text>{{item.name}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="section-title">附近热门</view>
+    <view wx:if="{{!hotProducts.length}}" class="empty">暂无商品，请商家入驻发布</view>
+    <view class="product" wx:for="{{hotProducts}}" wx:key="id" data-id="{{item.id}}" bindtap="goProduct">
+      <view class="cover">{{item.name[0]}}</view>
+      <view class="meta">
+        <view class="name">{{item.name}}</view>
+        <view class="price">{{formatPrice(item)}}</view>
+        <view class="sub">{{item.merchant_name}} · {{item.address}}</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="section-title">推荐商家</view>
+    <view class="merchant" wx:for="{{merchants}}" wx:key="id" data-id="{{item.id}}" bindtap="goMerchant">
+      <view class="m-name">{{item.merchant_name}}</view>
+      <view class="sub">{{item.address || '本地商家'}}</view>
+    </view>
+  </view>
+</view>

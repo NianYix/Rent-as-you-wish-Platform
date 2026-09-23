@@ -1,0 +1,38 @@
+<view class="page" wx:if="{{detail}}">
+  <swiper class="gallery" indicator-dots>
+    <swiper-item wx:for="{{detail.images}}" wx:key="id">
+      <image src="{{item.image_url}}" mode="aspectFill" class="g-img" />
+    </swiper-item>
+    <swiper-item wx:if="{{!detail.images.length}}">
+      <view class="g-fallback">{{detail.name}}</view>
+    </swiper-item>
+  </swiper>
+
+  <view class="card">
+    <view class="name">{{detail.name}}</view>
+    <view class="price">{{priceText}}</view>
+    <view class="deposit" wx:if="{{detail.deposit}}">押金：¥{{detail.deposit}}</view>
+  </view>
+
+  <view class="card">
+    <view class="h">商品描述</view>
+    <view class="txt">{{detail.description || '暂无描述'}}</view>
+  </view>
+
+  <view class="card">
+    <view class="h">商品参数</view>
+    <view class="txt">{{detail.specs || '暂无'}}</view>
+  </view>
+
+  <view class="card" bindtap="goMerchant">
+    <view class="h">商家信息</view>
+    <view class="txt">{{detail.merchant.merchant_name}}</view>
+    <view class="sub">{{detail.merchant.address}}</view>
+  </view>
+
+  <view class="bottom">
+    <button class="btn-ghost" bindtap="toggleFav">{{detail.is_favorited ? '已收藏' : '收藏'}}</button>
+    <button class="btn-ghost" bindtap="showWechat">微信联系</button>
+    <button class="btn-primary" bindtap="callPhone">📞 联系商家</button>
+  </view>
+</view>

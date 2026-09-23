@@ -1,0 +1,54 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/category/category",
+    "pages/search/search",
+    "pages/product/detail",
+    "pages/merchant/detail",
+    "pages/merchant/apply",
+    "pages/merchant/center",
+    "pages/merchant/products",
+    "pages/merchant/product-edit",
+    "pages/favorite/favorite",
+    "pages/history/history",
+    "pages/user/user",
+    "pages/region/select",
+    "pages/legal/privacy",
+    "pages/legal/agreement"
+  ],
+  "window": {
+    "navigationBarTitleText": "乡镇租赁",
+    "navigationBarBackgroundColor": "#1B5E3B",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#F3F6F2"
+  },
+  "tabBar": {
+    "color": "#6B7280",
+    "selectedColor": "#1B5E3B",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页",
+        "iconPath": "assets/tab-home.png",
+        "selectedIconPath": "assets/tab-home-active.png"
+      },
+      {
+        "pagePath": "pages/category/category",
+        "text": "分类",
+        "iconPath": "assets/tab-cat.png",
+        "selectedIconPath": "assets/tab-cat-active.png"
+      },
+      {
+        "pagePath": "pages/user/user",
+        "text": "我的",
+        "iconPath": "assets/tab-user.png",
+        "selectedIconPath": "assets/tab-user-active.png"
+      }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "__usePrivacyCheck__": true
+}

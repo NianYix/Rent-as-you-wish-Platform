@@ -1,0 +1,13 @@
+.hero {
+  margin: 24rpx; padding: 32rpx; border-radius: 20rpx; display:flex; gap:24rpx; align-items:center;
+  background: linear-gradient(135deg, #1b5e3b, #3f8f5f); color:#fff;
+}
+.avatar {
+  width: 100rpx; height:100rpx; border-radius:50%; background:rgba(255,255,255,.2);
+  display:flex; align-items:center; justify-content:center; font-size:40rpx; font-weight:700;
+}
+.name { font-size:34rpx; font-weight:600; }
+.role { opacity:.85; margin-top:8rpx; font-size:24rpx; }
+.menu { margin: 24rpx; }
+.row { padding: 28rpx 8rpx; border-bottom:1px solid #f3f4f6; }
+.row:last-child { border-bottom:none; }

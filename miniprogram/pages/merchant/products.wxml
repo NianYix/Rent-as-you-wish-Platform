@@ -1,0 +1,13 @@
+<view class="page">
+  <view class="card" wx:for="{{items}}" wx:key="id">
+    <view class="name">{{item.name}}</view>
+    <view class="price">{{formatPrice(item)}}</view>
+    <view class="sub">审核：{{item.audit_status}} / 上下架：{{item.shelf_status}}</view>
+    <view class="ops">
+      <button size="mini" bindtap="edit" data-id="{{item.id}}">编辑</button>
+      <button size="mini" bindtap="online" data-id="{{item.id}}">上架</button>
+      <button size="mini" bindtap="offline" data-id="{{item.id}}">下架</button>
+    </view>
+  </view>
+  <view wx:if="{{!items.length}}" class="empty">暂无商品</view>
+</view>

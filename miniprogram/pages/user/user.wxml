@@ -1,0 +1,19 @@
+<view class="page">
+  <view class="hero">
+    <view class="avatar">{{profile ? profile.nickname[0] : '游'}}</view>
+    <view>
+      <view class="name">{{profile ? profile.nickname : '未登录'}}</view>
+      <view class="role" wx:if="{{profile}}">角色：{{profile.role}}</view>
+      <button wx:else size="mini" class="btn-primary" bindtap="login">开发登录</button>
+    </view>
+  </view>
+
+  <view class="menu card">
+    <view class="row" data-url="/pages/favorite/favorite" bindtap="go">我的收藏</view>
+    <view class="row" data-url="/pages/history/history" bindtap="go">浏览记录</view>
+    <view class="row" data-url="/pages/merchant/apply" bindtap="go">商家入驻</view>
+    <view class="row" data-url="/pages/merchant/center" bindtap="go">商家中心</view>
+    <view class="row" data-url="/pages/legal/agreement" bindtap="go">用户协议</view>
+    <view class="row" data-url="/pages/legal/privacy" bindtap="go">隐私政策</view>
+  </view>
+</view>

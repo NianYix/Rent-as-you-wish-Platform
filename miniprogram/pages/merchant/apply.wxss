@@ -1,0 +1,5 @@
+.card{margin:24rpx;background:#fff;border-radius:16rpx;padding:24rpx}
+.label{margin:20rpx 0 8rpx;color:#4b5563}
+input,textarea{background:#f3f6f2;padding:16rpx;border-radius:12rpx;width:100%;box-sizing:border-box}
+textarea{min-height:160rpx}
+button{margin-top:32rpx}

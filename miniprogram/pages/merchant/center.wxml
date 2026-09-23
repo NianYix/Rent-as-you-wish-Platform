@@ -1,0 +1,13 @@
+<view class="page">
+  <view class="card" wx:if="{{merchant}}">
+    <view class="name">{{merchant.merchant_name}}</view>
+    <view class="sub">状态：{{merchant.verify_status}}</view>
+    <view class="sub" wx:if="{{merchant.reject_reason}}">原因：{{merchant.reject_reason}}</view>
+    <button class="btn-primary" bindtap="goEdit" wx:if="{{merchant.verify_status==='APPROVED'}}">发布商品</button>
+    <button class="btn-ghost" bindtap="goProducts" wx:if="{{merchant.verify_status==='APPROVED'}}">商品管理</button>
+  </view>
+  <view class="card" wx:else>
+    <view>你还不是商家</view>
+    <button class="btn-primary" bindtap="goApply">去入驻</button>
+  </view>
+</view>

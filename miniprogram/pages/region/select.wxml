@@ -1,0 +1,7 @@
+<view class="page">
+  <view class="path">{{path.length ? '' : '请选择地区'}}
+    <text wx:for="{{path}}" wx:key="id"> {{item.name}} /</text>
+  </view>
+  <view class="item" wx:for="{{list}}" wx:key="id" data-item="{{item}}" bindtap="select">{{item.name}}</view>
+  <button wx:if="{{path.length && path[path.length-1].level>=4}}" class="btn-primary" bindtap="confirmTown">选到这里</button>
+</view>

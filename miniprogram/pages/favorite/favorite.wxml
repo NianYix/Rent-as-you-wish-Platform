@@ -1,0 +1,12 @@
+<view class="page">
+  <view class="card" wx:for="{{items}}" wx:key="index" data-item="{{item}}" bindtap="go">
+    <block wx:if="{{item.product}}">
+      <view class="name">{{item.product.name}}</view>
+      <view class="price">{{formatPrice(item.product)}}</view>
+    </block>
+    <block wx:else>
+      <view class="name">{{item.merchant.merchant_name}}</view>
+    </block>
+  </view>
+  <view wx:if="{{!items.length}}" class="empty">暂无收藏</view>
+</view>

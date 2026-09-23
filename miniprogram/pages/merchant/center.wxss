@@ -1,0 +1,4 @@
+.card{margin:24rpx;background:#fff;border-radius:16rpx;padding:24rpx}
+.name{font-size:34rpx;font-weight:600}
+.sub{margin-top:8rpx;color:#6b7280}
+button{margin-top:20rpx}

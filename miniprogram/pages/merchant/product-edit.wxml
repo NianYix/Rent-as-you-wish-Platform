@@ -1,0 +1,27 @@
+<view class="page">
+  <view class="card">
+    <view class="label">商品名称</view>
+    <input data-key="name" bindinput="onInput" placeholder="商品名称" />
+    <view class="label">分类</view>
+    <picker mode="selector" range="{{categories}}" range-key="name" bindchange="onCat">
+      <view class="picker">选择二级分类</view>
+    </picker>
+    <view class="label">价格</view>
+    <input data-key="price" bindinput="onInput" type="digit" placeholder="金额，面议可留空" />
+    <view class="label">价格单位</view>
+    <picker mode="selector" range="{{['小时','天','次','月','面议']}}" bindchange="onUnit">
+      <view class="picker">当前：{{form.price_unit}}</view>
+    </picker>
+    <view class="label">押金</view>
+    <input data-key="deposit" bindinput="onInput" type="digit" />
+    <view class="label">库存</view>
+    <input data-key="stock" bindinput="onInput" type="number" value="{{form.stock}}" />
+    <view class="label">地址</view>
+    <input data-key="address" bindinput="onInput" />
+    <view class="label">描述</view>
+    <textarea data-key="description" bindinput="onInput" />
+    <view class="label">参数</view>
+    <textarea data-key="specs" bindinput="onInput" />
+    <button class="btn-primary" bindtap="submit">提交审核</button>
+  </view>
+</view>

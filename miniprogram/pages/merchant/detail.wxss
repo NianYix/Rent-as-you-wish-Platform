@@ -1,0 +1,5 @@
+.card{margin:20rpx 24rpx;background:#fff;border-radius:16rpx;padding:24rpx}
+.name{font-size:34rpx;font-weight:600}
+.sub{color:#6b7280;margin-top:8rpx}
+.txt{margin-top:16rpx;line-height:1.6}
+.item{margin-top:0}

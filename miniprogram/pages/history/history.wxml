@@ -1,0 +1,7 @@
+<view class="page">
+  <view class="card" wx:for="{{items}}" wx:key="id" data-id="{{item.id}}" bindtap="go">
+    <view class="name">{{item.name}}</view>
+    <view class="price">{{formatPrice(item)}}</view>
+  </view>
+  <view wx:if="{{!items.length}}" class="empty">暂无浏览记录</view>
+</view>

@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.env
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+
+# Node
+node_modules/
+dist/
+.DS_Store
+*.log
+.npm
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Uploads / local storage
+backend/uploads/
+uploads/
+*.db
+backend/*.db
+
+
+# WeChat
+miniprogram/node_modules/
+miniprogram/miniprogram_npm/
+project.private.config.json
+
+# OS
+Thumbs.db
+Desktop.ini
+
+# Build
+admin/dist/
+*.local

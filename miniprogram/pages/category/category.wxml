@@ -1,0 +1,22 @@
+<view class="wrap">
+  <scroll-view scroll-y class="left">
+    <view
+      class="left-item {{current.id===item.id?'active':''}}"
+      wx:for="{{tree}}"
+      wx:key="id"
+      data-id="{{item.id}}"
+      bindtap="selectCat"
+    >{{item.name}}</view>
+  </scroll-view>
+  <scroll-view scroll-y class="right">
+    <view class="children" wx:if="{{current.children.length}}">
+      <text wx:for="{{current.children}}" wx:key="id" class="tag">{{item.name}}</text>
+    </view>
+    <view class="product" wx:for="{{products}}" wx:key="id" data-id="{{item.id}}" bindtap="goProduct">
+      <view class="name">{{item.name}}</view>
+      <view class="price">{{formatPrice(item)}}</view>
+      <view class="sub">{{item.merchant_name}}</view>
+    </view>
+    <view wx:if="{{!products.length}}" class="empty">该分类暂无商品</view>
+  </scroll-view>
+</view>

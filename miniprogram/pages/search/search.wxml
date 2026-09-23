@@ -1,0 +1,12 @@
+<view class="box">
+  <view class="bar">
+    <input placeholder="搜索帐篷、桌椅、挖掘机..." value="{{keyword}}" bindinput="onInput" confirm-type="search" bindconfirm="onSearch" />
+    <button size="mini" class="btn-primary" bindtap="onSearch">搜索</button>
+  </view>
+  <view class="item" wx:for="{{items}}" wx:key="id" data-id="{{item.id}}" bindtap="goProduct">
+    <view class="name">{{item.name}}</view>
+    <view class="price">{{formatPrice(item)}}</view>
+    <view class="sub">{{item.address}}</view>
+  </view>
+  <view wx:if="{{!items.length}}" class="empty">输入关键词开始搜索</view>
+</view>
