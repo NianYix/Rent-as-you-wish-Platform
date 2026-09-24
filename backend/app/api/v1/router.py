@@ -267,6 +267,75 @@ def merchant_update(body: MerchantUpdateIn, user: UserDep, db: DbDep):
     return ok(data)
 
 
+# ---------- merchant self products (must be before /merchants/{id}/...) ----------
+@router.get("/merchants/me/products")
+def list_my_products(
+    user: MerchantUserDep,
+    db: DbDep,
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+):
+    merchant = biz.get_my_merchant(db, user)
+    if not merchant:
+        raise AppError("商家不存在")
+    rows, total = biz.query_products(
+        db, merchant_id=merchant.id, public_only=False, page=page, page_size=page_size
+    )
+    return ok(
+        {
+            "items": [biz.product_list_item(p) for p in rows],
+            "total": total,
+            "page": page,
+            "page_size": page_size,
+        }
+    )
+
+
+@router.post("/merchants/me/products")
+def create_my_product(body: ProductCreateIn, user: MerchantUserDep, db: DbDep):
+    merchant = biz.ensure_approved_merchant(db, user)
+    p = biz.create_product(db, merchant, body)
+    return ok({"id": p.id, "audit_status": p.audit_status})
+
+
+@router.get("/merchants/me/products/{product_id}")
+def get_my_product(product_id: int, user: MerchantUserDep, db: DbDep):
+    merchant = biz.get_my_merchant(db, user)
+    if not merchant:
+        raise AppError("商家不存在")
+    return ok(biz.get_product_detail(db, product_id, user, allow_owner=True))
+
+
+@router.put("/merchants/me/products/{product_id}")
+def update_my_product(
+    product_id: int, body: ProductUpdateIn, user: MerchantUserDep, db: DbDep
+):
+    merchant = biz.ensure_approved_merchant(db, user)
+    p = biz.update_product(db, merchant, product_id, body)
+    return ok({"id": p.id, "audit_status": p.audit_status})
+
+
+@router.post("/merchants/me/products/{product_id}/submit")
+def submit_my_product(product_id: int, user: MerchantUserDep, db: DbDep):
+    merchant = biz.ensure_approved_merchant(db, user)
+    p = biz.submit_product(db, merchant, product_id)
+    return ok({"id": p.id, "audit_status": p.audit_status})
+
+
+@router.post("/merchants/me/products/{product_id}/online")
+def online_my_product(product_id: int, user: MerchantUserDep, db: DbDep):
+    merchant = biz.ensure_approved_merchant(db, user)
+    p = biz.set_product_shelf(db, merchant, product_id, True)
+    return ok({"id": p.id, "shelf_status": p.shelf_status})
+
+
+@router.post("/merchants/me/products/{product_id}/offline")
+def offline_my_product(product_id: int, user: MerchantUserDep, db: DbDep):
+    merchant = biz.ensure_approved_merchant(db, user)
+    p = biz.set_product_shelf(db, merchant, product_id, False)
+    return ok({"id": p.id, "shelf_status": p.shelf_status})
+
+
 @router.get("/merchants/{merchant_id}")
 def merchant_detail(merchant_id: int, db: DbDep):
     m = db.get(Merchant, merchant_id)
@@ -327,67 +396,6 @@ def contact_wechat(
         db, user=user, merchant_id=merchant_id, product_id=product_id, inquiry_type="WECHAT"
     )
     return ok({"wechat": m.wechat})
-
-
-# ---------- merchant products ----------
-@router.post("/merchants/me/products")
-def create_my_product(body: ProductCreateIn, user: MerchantUserDep, db: DbDep):
-    merchant = biz.ensure_approved_merchant(db, user)
-    p = biz.create_product(db, merchant, body)
-    return ok({"id": p.id, "audit_status": p.audit_status})
-
-
-@router.put("/merchants/me/products/{product_id}")
-def update_my_product(
-    product_id: int, body: ProductUpdateIn, user: MerchantUserDep, db: DbDep
-):
-    merchant = biz.ensure_approved_merchant(db, user)
-    p = biz.update_product(db, merchant, product_id, body)
-    return ok({"id": p.id, "audit_status": p.audit_status})
-
-
-@router.post("/merchants/me/products/{product_id}/submit")
-def submit_my_product(product_id: int, user: MerchantUserDep, db: DbDep):
-    merchant = biz.ensure_approved_merchant(db, user)
-    p = biz.submit_product(db, merchant, product_id)
-    return ok({"id": p.id, "audit_status": p.audit_status})
-
-
-@router.post("/merchants/me/products/{product_id}/online")
-def online_my_product(product_id: int, user: MerchantUserDep, db: DbDep):
-    merchant = biz.ensure_approved_merchant(db, user)
-    p = biz.set_product_shelf(db, merchant, product_id, True)
-    return ok({"id": p.id, "shelf_status": p.shelf_status})
-
-
-@router.post("/merchants/me/products/{product_id}/offline")
-def offline_my_product(product_id: int, user: MerchantUserDep, db: DbDep):
-    merchant = biz.ensure_approved_merchant(db, user)
-    p = biz.set_product_shelf(db, merchant, product_id, False)
-    return ok({"id": p.id, "shelf_status": p.shelf_status})
-
-
-@router.get("/merchants/me/products")
-def list_my_products(
-    user: MerchantUserDep,
-    db: DbDep,
-    page: int = Query(1, ge=1),
-    page_size: int = Query(20, ge=1, le=100),
-):
-    merchant = biz.get_my_merchant(db, user)
-    if not merchant:
-        raise AppError("商家不存在")
-    rows, total = biz.query_products(
-        db, merchant_id=merchant.id, public_only=False, page=page, page_size=page_size
-    )
-    return ok(
-        {
-            "items": [biz.product_list_item(p) for p in rows],
-            "total": total,
-            "page": page,
-            "page_size": page_size,
-        }
-    )
 
 
 # ---------- favorites / history ----------

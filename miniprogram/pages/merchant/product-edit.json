@@ -1,1 +1,6 @@
-{ "navigationBarTitleText": "发布商品" }
+{
+  "navigationBarTitleText": "发布商品",
+  "usingComponents": {
+    "privacy-popup": "/components/privacy-popup/privacy-popup"
+  }
+}

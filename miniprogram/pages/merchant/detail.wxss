@@ -3,3 +3,7 @@
 .sub{color:#6b7280;margin-top:8rpx}
 .txt{margin-top:16rpx;line-height:1.6}
 .item{margin-top:0}
+.row{display:flex;gap:16rpx;align-items:center}
+.thumb{width:140rpx;height:140rpx;border-radius:12rpx;flex-shrink:0;background:#dce8e0}
+.placeholder{display:flex;align-items:center;justify-content:center;color:#1b5e3b;font-size:40rpx;font-weight:600}
+.info{flex:1}

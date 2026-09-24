@@ -1,27 +1,53 @@
 <view class="page">
+  <privacy-popup id="privacyPopup" />
   <view class="card">
+    <view class="label">商品图片（必填，最多9张）</view>
+    <view class="img-grid">
+      <view class="img-item" wx:for="{{form.images}}" wx:key="sort">
+        <image src="{{item.image_url}}" mode="aspectFill" class="thumb" data-index="{{index}}" bindtap="previewImage" />
+        <view class="cover-tag" wx:if="{{index===0}}">封面</view>
+        <view class="img-actions">
+          <text data-index="{{index}}" catchtap="setCover" wx:if="{{index!==0}}">设封面</text>
+          <text class="del" data-index="{{index}}" catchtap="removeImage">删除</text>
+        </view>
+      </view>
+      <view class="img-add" wx:if="{{form.images.length < 9}}" bindtap="chooseImages">
+        <text class="plus">+</text>
+        <text>上传图片</text>
+      </view>
+    </view>
+
     <view class="label">商品名称</view>
-    <input data-key="name" bindinput="onInput" placeholder="商品名称" />
+    <input data-key="name" value="{{form.name}}" bindinput="onInput" placeholder="商品名称" />
+
     <view class="label">分类</view>
-    <picker mode="selector" range="{{categories}}" range-key="name" bindchange="onCat">
-      <view class="picker">选择二级分类</view>
+    <picker mode="selector" range="{{categories}}" range-key="name" value="{{categoryIndex}}" bindchange="onCat">
+      <view class="picker">{{categories[categoryIndex].name || '选择二级分类'}}</view>
     </picker>
+
     <view class="label">价格</view>
-    <input data-key="price" bindinput="onInput" type="digit" placeholder="金额，面议可留空" />
+    <input data-key="price" value="{{form.price}}" bindinput="onInput" type="digit" placeholder="金额，面议可留空" />
+
     <view class="label">价格单位</view>
-    <picker mode="selector" range="{{['小时','天','次','月','面议']}}" bindchange="onUnit">
-      <view class="picker">当前：{{form.price_unit}}</view>
+    <picker mode="selector" range="{{unitLabels}}" value="{{unitIndex}}" bindchange="onUnit">
+      <view class="picker">当前：{{unitLabels[unitIndex]}}</view>
     </picker>
+
     <view class="label">押金</view>
-    <input data-key="deposit" bindinput="onInput" type="digit" />
+    <input data-key="deposit" value="{{form.deposit}}" bindinput="onInput" type="digit" placeholder="可选" />
+
     <view class="label">库存</view>
-    <input data-key="stock" bindinput="onInput" type="number" value="{{form.stock}}" />
+    <input data-key="stock" value="{{form.stock}}" bindinput="onInput" type="number" />
+
     <view class="label">地址</view>
-    <input data-key="address" bindinput="onInput" />
+    <input data-key="address" value="{{form.address}}" bindinput="onInput" placeholder="详细地址" />
+
     <view class="label">描述</view>
-    <textarea data-key="description" bindinput="onInput" />
+    <textarea data-key="description" value="{{form.description}}" bindinput="onInput" placeholder="商品描述" />
+
     <view class="label">参数</view>
-    <textarea data-key="specs" bindinput="onInput" />
-    <button class="btn-primary" bindtap="submit">提交审核</button>
+    <textarea data-key="specs" value="{{form.specs}}" bindinput="onInput" placeholder="尺寸、容量等" />
+
+    <button class="btn-primary" bindtap="submit" disabled="{{uploading}}">{{isEdit ? '保存并提交审核' : '提交审核'}}</button>
   </view>
 </view>

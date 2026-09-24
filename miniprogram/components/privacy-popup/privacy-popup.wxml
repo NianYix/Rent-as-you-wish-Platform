@@ -1,0 +1,20 @@
+<view class="mask" wx:if="{{show}}" catchtouchmove="noop">
+  <view class="panel">
+    <view class="title">隐私保护提示</view>
+    <view class="content">
+      上传商品图片需要使用你的相册和摄像头。请阅读
+      <navigator url="/pages/legal/privacy" class="link" hover-class="none">《隐私政策》</navigator>
+      。点击「同意」后可继续选图。
+    </view>
+    <view class="actions">
+      <button class="btn cancel" bindtap="onDisagree">拒绝</button>
+      <button
+        id="privacy-agree-btn"
+        class="btn ok"
+        open-type="agreePrivacyAuthorization"
+        bindagreeprivacyauthorization="onAgree"
+        bindtap="onAgree"
+      >同意</button>
+    </view>
+  </view>
+</view>

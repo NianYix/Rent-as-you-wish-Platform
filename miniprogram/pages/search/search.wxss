@@ -1,6 +1,9 @@
 .box { padding: 24rpx; }
 .bar { display:flex; gap:12rpx; align-items:center; margin-bottom:20rpx; }
 .bar input { flex:1; background:#fff; padding:16rpx 20rpx; border-radius:12rpx; }
-.item { background:#fff; border-radius:12rpx; padding:20rpx; margin-bottom:12rpx; }
+.item { display:flex; gap:16rpx; background:#fff; border-radius:12rpx; padding:20rpx; margin-bottom:12rpx; }
+.thumb { width:140rpx; height:140rpx; border-radius:12rpx; flex-shrink:0; background:#dce8e0; }
+.placeholder { display:flex; align-items:center; justify-content:center; color:#1b5e3b; font-size:40rpx; font-weight:600; }
+.info { flex:1; min-width:0; }
 .name { font-weight:600; }
 .sub { color:#6b7280; font-size:24rpx; margin-top:6rpx; }

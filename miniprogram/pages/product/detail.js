@@ -14,6 +14,11 @@ Page({
     try {
       await ensureLogin().catch(() => {});
       const detail = await request({ url: `/products/${this.data.id}` });
+      let images = detail.images || [];
+      if (!images.length && detail.cover_image) {
+        images = [{ id: 0, image_url: detail.cover_image, sort: 0 }];
+      }
+      detail.images = images;
       this.setData({ detail, priceText: formatPrice(detail) });
     } catch (e) {
       wx.showToast({ title: e.message, icon: "none" });

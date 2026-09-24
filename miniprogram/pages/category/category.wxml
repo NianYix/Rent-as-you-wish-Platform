@@ -13,9 +13,13 @@
       <text wx:for="{{current.children}}" wx:key="id" class="tag">{{item.name}}</text>
     </view>
     <view class="product" wx:for="{{products}}" wx:key="id" data-id="{{item.id}}" bindtap="goProduct">
-      <view class="name">{{item.name}}</view>
-      <view class="price">{{formatPrice(item)}}</view>
-      <view class="sub">{{item.merchant_name}}</view>
+      <image wx:if="{{item.cover_image}}" class="thumb" src="{{item.cover_image}}" mode="aspectFill" />
+      <view wx:else class="thumb placeholder">{{item.name[0]}}</view>
+      <view class="info">
+        <view class="name">{{item.name}}</view>
+        <view class="price">{{formatPrice(item)}}</view>
+        <view class="sub">{{item.merchant_name}}</view>
+      </view>
     </view>
     <view wx:if="{{!products.length}}" class="empty">该分类暂无商品</view>
   </scroll-view>

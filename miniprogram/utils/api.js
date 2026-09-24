@@ -1,4 +1,4 @@
-const { baseURL } = require("./config");
+const { baseURL, uploadURL } = require("./config");
 
 function getToken() {
   return wx.getStorageSync("token") || "";
@@ -38,6 +38,40 @@ function request({ url, method = "GET", data = {}, auth = false }) {
   });
 }
 
+/** 上传本地图片，返回可访问的 url */
+function uploadImage(filePath) {
+  return new Promise((resolve, reject) => {
+    const token = getToken();
+    if (!token) {
+      reject(new Error("请先登录"));
+      return;
+    }
+    wx.uploadFile({
+      url: uploadURL,
+      filePath,
+      name: "file",
+      header: { Authorization: `Bearer ${token}` },
+      success(res) {
+        let body = res.data;
+        try {
+          body = typeof body === "string" ? JSON.parse(body) : body;
+        } catch (e) {
+          reject(new Error("上传响应解析失败"));
+          return;
+        }
+        if (res.statusCode >= 400 || !body || body.code !== 0) {
+          reject(new Error((body && body.message) || "上传失败"));
+          return;
+        }
+        resolve(body.data.url);
+      },
+      fail(err) {
+        reject(new Error(err.errMsg || "上传失败"));
+      },
+    });
+  });
+}
+
 function formatPrice(item) {
   if (!item) return "";
   if (item.price_unit === "NEGOTIABLE") return "面议";
@@ -56,7 +90,6 @@ function formatPrice(item) {
 async function ensureLogin() {
   let token = getToken();
   if (token) return token;
-  // 本地开发：无 AppID 时走开发登录
   try {
     const data = await request({
       url: "/auth/dev/login",
@@ -68,13 +101,13 @@ async function ensureLogin() {
     wx.setStorageSync("user_id", data.user_id);
     return data.access_token;
   } catch (e) {
-    // 若已配置微信，可改为 wx.login + /auth/wechat/login
     throw e;
   }
 }
 
 module.exports = {
   request,
+  uploadImage,
   formatPrice,
   ensureLogin,
   getToken,

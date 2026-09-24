@@ -1,8 +1,14 @@
 <view class="page">
   <view class="card" wx:for="{{items}}" wx:key="index" data-item="{{item}}" bindtap="go">
     <block wx:if="{{item.product}}">
-      <view class="name">{{item.product.name}}</view>
-      <view class="price">{{formatPrice(item.product)}}</view>
+      <view class="row">
+        <image wx:if="{{item.product.cover_image}}" class="thumb" src="{{item.product.cover_image}}" mode="aspectFill" />
+        <view wx:else class="thumb placeholder">{{item.product.name[0]}}</view>
+        <view class="info">
+          <view class="name">{{item.product.name}}</view>
+          <view class="price">{{formatPrice(item.product)}}</view>
+        </view>
+      </view>
     </block>
     <block wx:else>
       <view class="name">{{item.merchant.merchant_name}}</view>

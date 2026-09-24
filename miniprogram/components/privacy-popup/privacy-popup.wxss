@@ -1,0 +1,15 @@
+.mask{
+  position:fixed;left:0;right:0;top:0;bottom:0;z-index:9999;
+  background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;
+}
+.panel{
+  width:600rpx;background:#fff;border-radius:20rpx;padding:36rpx 32rpx 28rpx;
+}
+.title{font-size:34rpx;font-weight:600;text-align:center;margin-bottom:20rpx}
+.content{font-size:26rpx;color:#4b5563;line-height:1.7}
+.link{color:#1b5e3b;display:inline}
+.actions{display:flex;gap:20rpx;margin-top:32rpx}
+.btn{flex:1;font-size:28rpx;border-radius:12rpx;margin:0;padding:0;height:80rpx;line-height:80rpx}
+.btn::after{border:none}
+.cancel{background:#f3f4f6;color:#374151}
+.ok{background:#1b5e3b;color:#fff}

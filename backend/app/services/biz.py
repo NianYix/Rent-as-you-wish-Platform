@@ -255,9 +255,13 @@ def ensure_approved_merchant(db: Session, user: User) -> Merchant:
     return merchant
 
 
-def _apply_product_fields(product: Product, data: ProductCreateIn | ProductUpdateIn) -> None:
-    dump = data.model_dump(exclude={"images", "submit"})
+def _apply_product_fields(
+    product: Product, data: ProductCreateIn | ProductUpdateIn, *, partial: bool = False
+) -> None:
+    dump = data.model_dump(exclude={"images", "submit"}, exclude_unset=partial)
     for k, v in dump.items():
+        if partial and v is None and k not in ("price", "deposit"):
+            continue
         setattr(product, k, v)
 
 
@@ -287,15 +291,18 @@ def update_product(
     product = db.get(Product, product_id)
     if not product or product.merchant_id != merchant.id:
         raise AppError("商品不存在", status_code=404)
-    _apply_product_fields(product, data)
+    _apply_product_fields(product, data, partial=True)
     if data.images is not None:
         for old in list(product.images):
             db.delete(old)
         db.flush()
         for img in data.images:
             db.add(ProductImage(product_id=product.id, image_url=img.image_url, sort=img.sort))
-        if not product.cover_image and data.images:
-            product.cover_image = data.images[0].image_url
+        if data.images and (not product.cover_image or data.cover_image is not None):
+            if data.cover_image:
+                product.cover_image = data.cover_image
+            elif data.images:
+                product.cover_image = data.images[0].image_url
     if data.submit:
         product.audit_status = ProductAuditStatus.PENDING_REVIEW.value
         product.reject_reason = ""

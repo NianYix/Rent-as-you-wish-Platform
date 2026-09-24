@@ -91,7 +91,16 @@ npm run dev
 
 `miniprogram/utils/config.js` 中 `baseURL` 默认指向 `http://127.0.0.1:8000/api/v1`。
 
-真机预览时，请把 `baseURL` 改成电脑局域网 IP（如 `http://192.168.x.x:8000/api/v1`），并保证手机与电脑同一网络。
+## 7. 真机预览（局域网）
+
+1. 电脑与手机连同一 WiFi  
+2. 查看电脑 IP（如 `192.168.2.145`）  
+3. 修改 `miniprogram/utils/config.js`：`MODE = "lan"`，并在 `HOSTS.lan` 填入该 IP  
+4. 后端用 `uvicorn --host 0.0.0.0 --port 8000`（`start.bat` 已如此）  
+5. Windows 防火墙若拦截，允许 Python / 8000 端口入站  
+6. 开发者工具勾选「不校验合法域名」后点 **预览**  
+
+公网访问需 HTTPS 域名 + 服务器部署，把 `MODE` 改为 `public` 并填写 `HOSTS.public`。
 
 ## 6. 建议联调路径
 

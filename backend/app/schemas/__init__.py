@@ -183,8 +183,26 @@ class ProductCreateIn(BaseModel):
     submit: bool = False
 
 
-class ProductUpdateIn(ProductCreateIn):
-    pass
+class ProductUpdateIn(BaseModel):
+    category_id: Optional[int] = None
+    name: Optional[str] = None
+    cover_image: Optional[str] = None
+    description: Optional[str] = None
+    specs: Optional[str] = None
+    price: Optional[Decimal] = None
+    price_unit: Optional[str] = None
+    price_unit_custom: Optional[str] = None
+    deposit: Optional[Decimal] = None
+    min_rent_days: Optional[int] = None
+    stock: Optional[int] = None
+    province_id: Optional[int] = None
+    city_id: Optional[int] = None
+    district_id: Optional[int] = None
+    town_id: Optional[int] = None
+    village_id: Optional[int] = None
+    address: Optional[str] = None
+    images: Optional[List[ProductImageIn]] = None  # None=不改图片
+    submit: bool = True
 
 
 class ProductImageOut(BaseModel):
