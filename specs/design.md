@@ -1,193 +1,97 @@
-# README 项目说明文档 — 设计说明
+# README 同步后续更新 — 设计说明
 
-> 依据：`specs/requirements.md`（README 文档任务，已确认）  
-> 目标产物：仓库根目录 `README.md`  
-> 原则：README 可独立扫读；细节步骤外链 `docs/`，避免与专项文档重复维护
+> 依据：`specs/requirements.md`（已确认）  
+> 目标：在现有 README 四块骨架上增补后续能力，不推倒重写
 
 ---
 
-## 1. 文档架构
+## 1. 变更策略
+
+| 策略 | 说明 |
+|---|---|
+| 增量更新 | 保留简介、功能、技术、目录、使用、更多文档结构 |
+| 功能块 | 用户端/商家端各补 1～2 条；可加「联调与体验」小节或并入使用说明 |
+| 使用块 | 扩展真机/公网/体验版路径；`start.bat` 行为与隧道脚本 |
+| 目录块 | `scripts/` 说明写清临时隧道 vs 命名隧道/kinih |
+| 文档表 | 新增 `docs/kinih-cloudflare.md` |
+
+不修改业务代码与 `docs/` 正文（除非发现死链）。
+
+---
+
+## 2. README 增补点映射
+
+### 2.1 功能说明
+
+**商家端追加：**
+
+- 发品选图：拍照 / 相册（`utils/media.js`）
+- 上传前隐私同意弹窗（`components/privacy-popup`）
+- 调试期 `app.json` 中 `__usePrivacyCheck__` 可为 `false`；提审前需配置隐私指引并改回 `true`（细节外链 wechat-publish）
+
+**用户端或通用追加：**
+
+- 接口返回的图片地址会按当前 `config.origin` 改写，避免旧局域网/旧隧道域名在真机失效
+
+### 2.2 技术栈 / 辅助
+
+辅助行已含 Cloudflare Tunnel；可注明支持临时隧道与命名隧道（固定域名如 `api.kinih.xyz`）。
+
+### 2.3 目录结构
+
+`scripts/` 注释扩展为：
 
 ```text
-README.md（入口总览）
-├── 产品简介
-├── 功能说明 ──────────────→ 来源：miniprogram/pages、admin/src/views、backend API
-├── 技术栈 ────────────────→ 来源：requirements.txt、admin/package.json、docker-compose
-├── 目录结构 ──────────────→ 来源：仓库实际顶层与关键子目录
-├── 如何使用（快速启动）────→ 摘要；细节 → docs/local-dev.md
-│   ├── start.bat 一键启动
-│   ├── 手动分步启动
-│   └── 默认账号 / 验证入口
-└── 更多文档链接
-    ├── docs/local-dev.md
-    ├── docs/deploy.md
-    ├── docs/wechat-publish.md
-    └── docs/cloudflare-tunnel.md
+scripts/
+  start-cloudflare-tunnel.*   # 临时公网隧道（URL 易变，自动写配置）
+  setup-kinih-tunnel.bat      # 一次性配置命名隧道 → api.kinih.xyz
+  start-named-tunnel.bat      # 日常启动命名隧道
 ```
 
-**职责边界**
+（若某文件尚未入库，以仓库实际存在文件为准写入。）
 
-| 文档 | 职责 |
+### 2.4 如何使用
+
+在「真机预览 / 公网联调」扩展为清晰三档：
+
+| 场景 | 做法 |
 |---|---|
-| `README.md` | 是什么、有什么功能、用什么技术、目录在哪、怎么最快跑起来 |
-| `docs/local-dev.md` | 数据库二选一、环境变量细项、真机 lan、联调路径、FAQ |
-| `docs/deploy.md` | 上云架构与步骤提纲 |
-| `docs/wechat-publish.md` | 注册、类目、合法域名、提审清单 |
-| `docs/cloudflare-tunnel.md` | 公网临时 HTTPS 隧道 |
+| 模拟器 | `MODE=local`，`127.0.0.1` |
+| 同 WiFi 真机 | `MODE=lan` + 电脑局域网 IP |
+| 4G / 公网调试 | 临时隧道脚本，或命名隧道固定域名 |
+| 体验版 | HTTPS 固定域名 + 微信后台合法域名；勿用 `*.trycloudflare.com` |
+
+`start.bat`：启动后端与管理后台；若已安装 `cloudflared` 且存在命名隧道配置，会尝试启动 `api.kinih.xyz` 隧道。
+
+`PUBLIC_BASE_URL` 需与公网 API 一致（图片外链依赖），改后需重启后端。
+
+### 2.5 更多文档
+
+增加一行：`docs/kinih-cloudflare.md` — kinih.xyz 命名隧道与体验版域名。
 
 ---
 
-## 2. README 章节设计
+## 3. 信息来源
 
-### 2.1 标题与简介
-
-- 标题：乡镇物品租赁微信小程序（Rent As You Wish）
-- 一句话定位：面向乡镇的本地物品租赁信息平台 MVP
-- 核心闭环：商家发布 → 用户浏览/搜索 → 联系商家
-
-### 2.2 功能说明
-
-按角色/端分小节，条目化（不写实现细节）：
-
-**用户端（小程序）**
-
-- 登录（微信登录 / 本地开发登录）
-- 首页：地区、搜索入口、Banner、分类入口、热门商品
-- 分类浏览、关键词搜索
-- 商品详情（价格/押金/图文、收藏、浏览计数）
-- 商家详情与电话/微信联系
-- 收藏、浏览记录
-- 用户协议、隐私政策
-
-**商家端（小程序内）**
-
-- 商家入驻申请
-- 商家中心、资料维护
-- 商品发布 / 编辑 / 上下架
-
-**管理后台（Web）**
-
-- 管理员登录
-- 数据概览
-- 用户管理、商家审核、商品审核
-- 分类管理、地区管理、Banner 管理
-
-**后端能力**
-
-- REST API（`/api/v1`）、OpenAPI（`/docs`）、健康检查（`/health`）
-- JWT 鉴权、种子数据、本地文件上传
-
-**范围边界**
-
-- 已实现：信息撮合闭环（上表）
-- 未做：支付、订单、IM、会员、AI
-
-### 2.3 技术栈
-
-表格或列表，与仓库一致：
-
-| 层 | 技术 |
+| 内容 | 来源 |
 |---|---|
-| 小程序 | 微信原生小程序 |
-| 后端 | Python 3.12+、FastAPI、SQLAlchemy 2、Pydantic、Uvicorn、JWT |
-| 数据 | 默认 SQLite；可选 MySQL 8 + Redis 7（Docker Compose） |
-| 存储 | 本地磁盘 `uploads/`（可扩展对象存储） |
-| 管理后台 | Vue 3、TypeScript、Vite、Element Plus、Pinia、Axios |
-| 辅助 | Docker Compose、`start.bat`、可选 Cloudflare Tunnel |
-
-### 2.4 目录结构
-
-展示与当前仓库对齐的树（含关键子目录）：
-
-```text
-Rent_As_You_Wish_Platform/
-├── miniprogram/           # 微信小程序
-│   ├── pages/             # 页面（首页/分类/商品/商家/用户等）
-│   ├── components/        # 组件
-│   └── utils/             # API、配置、媒体工具
-├── backend/               # FastAPI 后端
-│   ├── app/
-│   │   ├── api/           # 路由与依赖
-│   │   ├── core/          # 配置、数据库、安全
-│   │   ├── models/        # ORM 模型
-│   │   ├── schemas/       # 请求/响应模型
-│   │   └── services/      # 业务与存储
-│   └── scripts/           # seed 等脚本
-├── admin/                 # 管理后台
-│   └── src/views/         # 各业务页面
-├── docs/                  # 专项文档
-├── specs/                 # 需求/设计/任务
-├── scripts/               # 隧道等辅助脚本
-├── docker-compose.yml     # MySQL + Redis
-├── start.bat              # Windows 本地一键启动
-├── .env.example           # 环境变量模板
-└── README.md
-```
-
-### 2.5 如何使用
-
-采用「快速路径 + 链接」：
-
-1. **前置**：Python 3.12+、Node.js 18+、微信开发者工具；可选 Docker Desktop  
-2. **配置**：复制 `.env.example` → `.env`  
-3. **推荐 Windows**：根目录运行 `start.bat`（自动 venv、依赖、seed、启动后端 :8000 与后台 :5173）  
-4. **手动步骤**：摘要后端 / 管理后台 / 小程序三步（与现 README 一致，可略加清晰）  
-5. **可选**：`docker compose up -d` 切换 MySQL/Redis  
-6. **默认账号**：`admin` / `Admin@123456`  
-7. **验证**：`http://127.0.0.1:8000/docs`、`http://127.0.0.1:5173`、小程序勾选不校验合法域名  
-8. **更多**：链接四份 `docs/*`
-
-真机 / 公网：一句话提示改 `miniprogram/utils/config.js` 的 `MODE`，细节见 local-dev / cloudflare-tunnel。
+| 隐私选图 | `media.js`、`privacy-popup`、`wechat-publish.md` §八 |
+| 媒体 URL 改写 | `miniprogram/utils/api.js` `fixMediaUrl` |
+| 临时隧道 | `docs/cloudflare-tunnel.md`、`scripts/start-cloudflare-tunnel.*` |
+| 命名隧道 / kinih | `docs/kinih-cloudflare.md`、`start.bat`、`scripts/setup-kinih-tunnel.bat` |
+| MODE | `miniprogram/utils/config.js` |
 
 ---
 
-## 3. 信息来源与依赖
+## 4. 文风约束
 
-| README 内容 | 权威来源 |
-|---|---|
-| 功能列表 | `miniprogram/app.json` pages、`admin/src/router`、`backend/app/api/v1/router.py` |
-| 技术版本感 | `backend/requirements.txt`、`admin/package.json`、`docker-compose.yml` |
-| 启动命令 | `start.bat`、`docs/local-dev.md`、`.env.example` |
-| 默认管理员 | `.env.example` 中 `ADMIN_SEED_*` |
-| 未做范围 | 既有 MVP 决策与当前代码事实 |
-
-**依赖关系**：README 依赖 `docs/` 存在且路径正确；不反向要求改业务代码。
-
-**冲突处理**：若旧 README 与代码/docs 不一致，以代码与 docs 为准覆盖。
+- 简体中文，增量段落简洁  
+- 固定域名示例可用 `https://api.kinih.xyz`，并注明可按实际域名替换  
+- 不把临时 `trycloudflare.com` URL 写成正式唯一配置  
+- 本机 `cloudflared` 绝对路径不必写入 README（避免环境绑定）
 
 ---
 
-## 4. 文风与格式
+## 5. 下一步
 
-- 简体中文，Markdown  
-- 标题层级：`##` 主块、`###` 子块  
-- 命令用 fenced code block；目录用 `text` 树  
-- 加粗仅用于少量关键提示（如默认密码、必勾选项）  
-- 不嵌入大段隐私政策正文、不贴生产密钥或易变隧道域名作为唯一配置
-
----
-
-## 5. 变更范围
-
-| 文件 | 动作 |
-|---|---|
-| `README.md` | 全文重写/大幅充实（执行阶段） |
-| `specs/design.md` | 本文件（设计） |
-| `specs/tasks.md` | 随后分解执行任务 |
-| 业务代码 / `docs/*` | **不修改**（除非执行中发现链接路径错误需极小修正） |
-
----
-
-## 6. 风险与注意
-
-- `miniprogram/utils/config.js` 当前可能为 `public` 模式与临时隧道域名：README 示例应写本地默认 `local` / `127.0.0.1`，并说明按环境切换，避免把临时隧道写成正式配置。  
-- 种子密码写在文档中仅作本地开发默认值，并提示生产必须修改。
-
----
-
-## 7. 下一步
-
-1. ~~需求确认~~  
-2. ~~生成本设计~~  
-3. 生成 `specs/tasks.md`  
-4. 你回复「开始执行」后，按 tasks 更新 `README.md`
+生成 `tasks.md` → 用户回复「开始执行」后改 `README.md`

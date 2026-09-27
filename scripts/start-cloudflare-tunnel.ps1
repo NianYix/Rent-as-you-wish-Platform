@@ -1,26 +1,80 @@
-# 启动 Cloudflare 临时隧道，自动写回小程序与后端公网地址
-# 用法: powershell -ExecutionPolicy Bypass -File scripts\start-cloudflare-tunnel.ps1
+# Start Cloudflare quick tunnel and write public URL into:
+# - miniprogram/utils/config.js  (MODE=public, HOSTS.public)
+# - backend/.env and root .env   (PUBLIC_BASE_URL)
+#
+# Called by scripts\start-cloudflare-tunnel.bat
 
-$ErrorActionPreference = "Stop"
-$Root = Split-Path -Parent $PSScriptRoot
-if (-not $Root) { $Root = (Get-Location).Path }
+$ErrorActionPreference = "Continue"
+$Root = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
+Set-Location $Root
 
-$cf = Get-Command cloudflared -ErrorAction SilentlyContinue
-if (-not $cf) {
+function Find-Cloudflared {
+  $cmd = Get-Command cloudflared -ErrorAction SilentlyContinue
+  if ($cmd) { return $cmd.Source }
   $fallback = "E:\JerrySoftware\cloudflared\cloudflared.exe"
-  if (Test-Path $fallback) { $cfPath = $fallback } else { throw "cloudflared not found" }
-} else {
-  $cfPath = $cf.Source
+  if (Test-Path $fallback) { return $fallback }
+  throw "cloudflared not found. Install it or add to PATH."
 }
+
+function Update-AppConfig([string]$PublicUrl) {
+  $configPath = Join-Path $Root "miniprogram\utils\config.js"
+  if (-not (Test-Path $configPath)) {
+    throw "Missing $configPath"
+  }
+
+  $cfg = Get-Content $configPath -Raw -Encoding UTF8
+
+  if ($cfg -match 'const MODE\s*=\s*"[^"]+"') {
+    $cfg = [regex]::Replace($cfg, 'const MODE\s*=\s*"[^"]+"', 'const MODE = "public"')
+  } else {
+    throw "const MODE not found in config.js"
+  }
+
+  if ($cfg -match 'public\s*:\s*"[^"]*"') {
+    $cfg = [regex]::Replace($cfg, 'public\s*:\s*"[^"]*"', "public: `"$PublicUrl`"")
+  } else {
+    throw "public: url not found in config.js"
+  }
+
+  $utf8NoBom = New-Object System.Text.UTF8Encoding $false
+  [System.IO.File]::WriteAllText($configPath, $cfg, $utf8NoBom)
+  Write-Host "[OK] Updated miniprogram/utils/config.js" -ForegroundColor Green
+  Write-Host "     MODE = public"
+  Write-Host "     public = $PublicUrl"
+}
+
+function Update-EnvPublicBaseUrl([string]$PublicUrl) {
+  foreach ($name in @("backend\.env", ".env")) {
+    $envFile = Join-Path $Root $name
+    if (-not (Test-Path $envFile)) { continue }
+    $text = Get-Content $envFile -Raw -Encoding UTF8
+    if ($null -eq $text) { $text = "" }
+    if ($text -match "(?m)^PUBLIC_BASE_URL=") {
+      $text = [regex]::Replace($text, "(?m)^PUBLIC_BASE_URL=.*$", "PUBLIC_BASE_URL=$PublicUrl")
+    } else {
+      if ($text.Length -gt 0 -and -not $text.EndsWith("`n")) { $text += "`r`n" }
+      $text += "PUBLIC_BASE_URL=$PublicUrl`r`n"
+    }
+    $utf8NoBom = New-Object System.Text.UTF8Encoding $false
+    [System.IO.File]::WriteAllText($envFile, $text, $utf8NoBom)
+    Write-Host "[OK] Updated $name PUBLIC_BASE_URL" -ForegroundColor Green
+  }
+}
+
+$cfPath = Find-Cloudflared
+Write-Host "cloudflared: $cfPath"
+Write-Host "project:     $Root"
+Write-Host ""
 
 try {
   $health = Invoke-WebRequest -Uri "http://127.0.0.1:8000/health" -UseBasicParsing -TimeoutSec 3
-  Write-Host "Backend OK:" $health.Content
+  Write-Host "Backend OK: $($health.Content)"
 } catch {
-  Write-Host "WARNING: backend 8000 not reachable. Start start.bat first." -ForegroundColor Yellow
+  Write-Host "WARNING: backend :8000 not ready. Run start.bat first." -ForegroundColor Yellow
 }
 
-Write-Host "Starting Cloudflare quick tunnel..."
+$state = [hashtable]::Synchronized(@{ Url = $null })
+
 $psi = New-Object System.Diagnostics.ProcessStartInfo
 $psi.FileName = $cfPath
 $psi.Arguments = "tunnel --url http://127.0.0.1:8000"
@@ -28,66 +82,67 @@ $psi.RedirectStandardError = $true
 $psi.RedirectStandardOutput = $true
 $psi.UseShellExecute = $false
 $psi.CreateNoWindow = $true
+
 $p = New-Object System.Diagnostics.Process
 $p.StartInfo = $psi
 
-$url = $null
-$handler = {
-  param($sender, $e)
-  if (-not $e.Data) { return }
-  Write-Host $e.Data
-  if ($e.Data -match "https://[a-zA-Z0-9-]+\.trycloudflare\.com") {
-    $script:url = $Matches[0]
+$outputHandler = {
+  if ([string]::IsNullOrEmpty($EventArgs.Data)) { return }
+  $line = $EventArgs.Data
+  Write-Host $line
+  if ($line -match "https://[a-zA-Z0-9-]+\.trycloudflare\.com") {
+    $Event.MessageData.Url = $Matches[0]
   }
 }
-$p.add_OutputDataReceived($handler)
-$p.add_ErrorDataReceived($handler)
+
+$outEvent = Register-ObjectEvent -InputObject $p -EventName OutputDataReceived -Action $outputHandler -MessageData $state
+$errEvent = Register-ObjectEvent -InputObject $p -EventName ErrorDataReceived -Action $outputHandler -MessageData $state
+
+Write-Host "Requesting quick tunnel..."
 [void]$p.Start()
 $p.BeginOutputReadLine()
 $p.BeginErrorReadLine()
 
 $deadline = (Get-Date).AddMinutes(2)
-while (-not $url -and -not $p.HasExited -and (Get-Date) -lt $deadline) {
-  Start-Sleep -Milliseconds 500
+while (-not $state.Url -and -not $p.HasExited -and (Get-Date) -lt $deadline) {
+  Start-Sleep -Milliseconds 400
 }
 
-if (-not $url) {
-  Write-Host "Failed to get trycloudflare URL (network timeout?). Try named tunnel instead." -ForegroundColor Red
-  Write-Host "See docs/cloudflare-tunnel.md"
-  if (-not $p.HasExited) { $p.Kill() }
+if (-not $state.Url) {
+  Write-Host ""
+  Write-Host "Failed to get trycloudflare.com URL (timeout/network)." -ForegroundColor Red
+  Write-Host "See docs/cloudflare-tunnel.md for named tunnel." -ForegroundColor Yellow
+  if (-not $p.HasExited) { try { $p.Kill() } catch {} }
+  Unregister-Event -SourceIdentifier $outEvent.Name -ErrorAction SilentlyContinue
+  Unregister-Event -SourceIdentifier $errEvent.Name -ErrorAction SilentlyContinue
   exit 1
 }
 
+$url = $state.Url.TrimEnd("/")
 Write-Host ""
-Write-Host "Public URL: $url" -ForegroundColor Green
+Write-Host "========================================" -ForegroundColor Cyan
+Write-Host " Public URL: $url" -ForegroundColor Cyan
+Write-Host "========================================" -ForegroundColor Cyan
+Write-Host ""
 
-# update config.js
-$configPath = Join-Path $Root "miniprogram\utils\config.js"
-$cfg = Get-Content $configPath -Raw -Encoding UTF8
-$cfg = $cfg -replace 'const MODE = "[^"]+"', 'const MODE = "public"'
-$cfg = $cfg -replace 'public:\s*"[^"]*"', ("public: `"$url`"")
-Set-Content -Path $configPath -Value $cfg -Encoding UTF8
-Write-Host "Updated miniprogram/utils/config.js -> MODE=public"
-
-# update backend .env PUBLIC_BASE_URL
-foreach ($envFile in @((Join-Path $Root "backend\.env"), (Join-Path $Root ".env"))) {
-  if (Test-Path $envFile) {
-    $envText = Get-Content $envFile -Raw -Encoding UTF8
-    if ($envText -match "PUBLIC_BASE_URL=") {
-      $envText = $envText -replace "PUBLIC_BASE_URL=.*", "PUBLIC_BASE_URL=$url"
-    } else {
-      $envText = $envText.TrimEnd() + "`r`nPUBLIC_BASE_URL=$url`r`n"
-    }
-    Set-Content -Path $envFile -Value $envText -Encoding UTF8
-    Write-Host "Updated $envFile PUBLIC_BASE_URL"
-  }
+try {
+  Update-AppConfig -PublicUrl $url
+  Update-EnvPublicBaseUrl -PublicUrl $url
+} catch {
+  Write-Host "Failed to write config: $($_.Exception.Message)" -ForegroundColor Red
 }
 
 Write-Host ""
-Write-Host "Next: recompile miniprogram, preview on phone (4G OK)."
-Write-Host "Keep this window open. Ctrl+C stops tunnel."
+Write-Host "Next: recompile miniprogram; restart backend for PUBLIC_BASE_URL."
+Write-Host "Keep this window open. Ctrl+C stops the tunnel."
 Write-Host ""
 
-# keep process attached
-while (-not $p.HasExited) { Start-Sleep -Seconds 2 }
-exit $p.ExitCode
+try {
+  while (-not $p.HasExited) { Start-Sleep -Seconds 2 }
+} finally {
+  Unregister-Event -SourceIdentifier $outEvent.Name -ErrorAction SilentlyContinue
+  Unregister-Event -SourceIdentifier $errEvent.Name -ErrorAction SilentlyContinue
+  Get-EventSubscriber | Where-Object { $_.SourceObject -eq $p } | Unregister-Event -ErrorAction SilentlyContinue
+}
+
+exit $(if ($null -ne $p.ExitCode) { $p.ExitCode } else { 0 })

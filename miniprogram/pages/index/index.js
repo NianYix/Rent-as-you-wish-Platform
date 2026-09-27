@@ -30,7 +30,12 @@ Page({
         merchants: data.recommended_merchants || [],
       });
     } catch (e) {
-      wx.showToast({ title: e.message || "加载失败", icon: "none" });
+      const msg = e.message || "加载失败";
+      if (/合法域名|domain list/i.test(msg)) {
+        wx.showModal({ title: "无法连接后台", content: msg, showCancel: false });
+      } else {
+        wx.showToast({ title: msg, icon: "none", duration: 3000 });
+      }
     }
   },
   goRegion() {

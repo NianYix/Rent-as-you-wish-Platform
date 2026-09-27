@@ -1,7 +1,49 @@
-const { baseURL, uploadURL } = require("./config");
+const { baseURL, uploadURL, origin } = require("./config");
+
+const MEDIA_KEYS = {
+  cover_image: true,
+  image_url: true,
+  avatar: true,
+  url: true,
+};
 
 function getToken() {
   return wx.getStorageSync("token") || "";
+}
+
+/**
+ * 把历史入库的本机/局域网/旧隧道图片地址，改写成当前 config.origin
+ * 否则开发者工具能显示，真机（尤其 4G）加载失败
+ */
+function fixMediaUrl(url) {
+  if (!url || typeof url !== "string") return url;
+  if (url.startsWith("/uploads/")) {
+    return `${origin}${url}`;
+  }
+  const m = url.match(/^(https?:\/\/[^/]+)(\/uploads\/.+)$/i);
+  if (m) {
+    return `${origin}${m[2]}`;
+  }
+  return url;
+}
+
+function fixMediaInData(data) {
+  if (data == null) return data;
+  if (typeof data === "string") return data;
+  if (Array.isArray(data)) return data.map(fixMediaInData);
+  if (typeof data === "object") {
+    const out = {};
+    Object.keys(data).forEach((k) => {
+      const v = data[k];
+      if (MEDIA_KEYS[k] && typeof v === "string") {
+        out[k] = fixMediaUrl(v);
+      } else {
+        out[k] = fixMediaInData(v);
+      }
+    });
+    return out;
+  }
+  return data;
 }
 
 function request({ url, method = "GET", data = {}, auth = false }) {
@@ -29,16 +71,26 @@ function request({ url, method = "GET", data = {}, auth = false }) {
           reject(new Error(body.message || "请求失败"));
           return;
         }
-        resolve(body.data);
+        resolve(fixMediaInData(body.data));
       },
       fail(err) {
-        reject(new Error(err.errMsg || "网络错误"));
+        const msg = (err && err.errMsg) || "网络错误";
+        // 体验版/正式版常见：未配置 request 合法域名
+        if (/url not in domain list|不在.*合法域名|domain list/i.test(msg)) {
+          reject(
+            new Error(
+              "接口域名未配置到微信后台「服务器域名」。体验版会强制校验，真机调试不校验。"
+            )
+          );
+          return;
+        }
+        reject(new Error(msg));
       },
     });
   });
 }
 
-/** 上传本地图片，返回可访问的 url */
+/** 上传本地图片，返回可访问的 url（并改写为当前 origin） */
 function uploadImage(filePath) {
   return new Promise((resolve, reject) => {
     const token = getToken();
@@ -63,7 +115,7 @@ function uploadImage(filePath) {
           reject(new Error((body && body.message) || "上传失败"));
           return;
         }
-        resolve(body.data.url);
+        resolve(fixMediaUrl(body.data.url));
       },
       fail(err) {
         reject(new Error(err.errMsg || "上传失败"));
@@ -111,4 +163,5 @@ module.exports = {
   formatPrice,
   ensureLogin,
   getToken,
+  fixMediaUrl,
 };

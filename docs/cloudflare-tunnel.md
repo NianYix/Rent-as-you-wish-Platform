@@ -2,34 +2,24 @@
 
 本机已安装 `cloudflared`（`E:\JerrySoftware\cloudflared\cloudflared.exe`）。
 
-## 方式 A：临时隧道（最快，URL 每次会变）
+## 方式 A：临时隧道（最快，URL 每次会变，自动写配置）
 
 1. 先启动后端（`start.bat` 或保证 `http://127.0.0.1:8000/health` 正常）
-2. 运行：
+2. 双击或运行：
 
 ```bat
 scripts\start-cloudflare-tunnel.bat
 ```
 
-或自动改配置：
+脚本会：
 
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts\start-cloudflare-tunnel.ps1
-```
+- 启动 `cloudflared tunnel --url http://127.0.0.1:8000`
+- **自动**把公网地址写入 `miniprogram/utils/config.js` 的 `HOSTS.public`
+- **自动**设置 `MODE = "public"`
+- **自动**同步 `backend/.env` 与根目录 `.env` 的 `PUBLIC_BASE_URL`
 
-成功后日志里会出现：
-
-```text
-https://xxxx.trycloudflare.com
-```
-
-3. 把该地址写入：
-
-- `miniprogram/utils/config.js` → `MODE: "public"`，`HOSTS.public`
-- `backend/.env` → `PUBLIC_BASE_URL`（图片 URL 用）
-
-4. **重启后端**（让 `PUBLIC_BASE_URL` 生效）
-5. 微信开发者工具 **编译**，勾选不校验合法域名，再预览真机（可用 4G）
+3. 微信开发者工具 **重新编译**；建议重启后端使图片域名生效  
+4. 预览真机（可用 4G）；**隧道窗口不要关**
 
 > 若出现 `api.trycloudflare.com ... timeout`，说明访问 Cloudflare 临时隧道 API 被网络限制，请改用方式 B。
 
